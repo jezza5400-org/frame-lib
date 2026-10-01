@@ -1,0 +1,46 @@
+{
+	"version": 8,
+	"configurePresets": [
+		{
+			"name": "base",
+			"hidden": true,
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/build/",
+			"description": "Using compilers: C = /usr/bin/clang, CXX = /usr/bin/clang++",
+			"cacheVariables": {
+				"CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+				"CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install/",
+				"CMAKE_C_COMPILER": "/usr/bin/clang",
+				"CMAKE_CXX_COMPILER": "/usr/bin/clang++"
+			}
+		},
+		{
+			"name": "debug",
+			"displayName": "Debug Build",
+			"description": "Full debugging symbols (-g), optimizations disabled",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "release",
+			"displayName": "Release Build",
+			"description": "Maximum execution speed optimization (-O3)",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		}
+	],
+	"buildPresets": [
+		{
+			"name": "debug",
+			"configurePreset": "debug"
+		},
+		{
+			"name": "release",
+			"configurePreset": "release"
+		}
+	]
+}

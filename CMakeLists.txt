@@ -9,7 +9,8 @@ add_subdirectory(lib/spdlog)
 add_subdirectory(lib/Catch2)
 
 add_library(frame-lib
-	src/frame-lib.cpp
+	src/ax25.cpp include/frame_lib/ax25.hpp
+	src/kiss.cpp include/frame_lib/kiss.hpp
 )
 
 target_include_directories(frame-lib
@@ -21,6 +22,9 @@ target_link_libraries(frame-lib
 	PRIVATE
 		spdlog::spdlog
 )
+
+include(CTest)
+include(Catch)
 
 enable_testing()
 
@@ -34,6 +38,4 @@ target_link_libraries(frame-lib_tests
 		Catch2::Catch2WithMain
 )
 
-include(CTest)
-include(Catch)
 catch_discover_tests(frame-lib_tests)

@@ -4,7 +4,7 @@ IndentWidth: 4
 TabWidth: 4
 UseTab: ForContinuationAndIndentation
 
-ColumnLimit: 150
+ColumnLimit: 0
 
 InsertNewlineAtEOF: true
 
@@ -24,9 +24,11 @@ ReferenceAlignment: Left
 SpaceBeforeParens: ControlStatements
 
 AllowShortFunctionsOnASingleLine: Empty
-AllowShortIfStatementsOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 
-# Prevent massive vertical alignment gaps
+# Forces trailing comments to have 2 spaces before them
+SpacesBeforeTrailingComments: 2
+
 AlignConsecutiveAssignments:
   Enabled: false
 

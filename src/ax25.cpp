@@ -9,14 +9,7 @@ std::string AX25::normaliseCallsign(std::string callsign) {
 
 	callsign.resize(6, ' ');
 
-	std::transform(
-		callsign.begin(),
-		callsign.end(),
-		callsign.begin(),
-		[](unsigned char c) {
-			return static_cast<char>(std::toupper(c));
-		}
-	);
+	std::ranges::for_each(callsign, [](char& c) { c = static_cast<char>(std::toupper(static_cast<unsigned char>(c))); });
 
 	return callsign;
 }
@@ -41,7 +34,7 @@ std::vector<uint8_t> AX25::encode(
 	for (std::size_t j = 0; j < 6; ++j) {
 		const unsigned char c = j < destCall.size() ? static_cast<unsigned char>(destCall[j]) : static_cast<unsigned char>(' ');
 
-		frame[i++] = static_cast<uint8_t>(std::toupper(c)) << 1;
+		frame[i++] = static_cast<uint8_t>(std::toupper(static_cast<unsigned char>(c))) << 1;
 	}
 
 	// Destination SSID. CRRSSSSL: C = 1, RR = 11, SS = SSID, L = 0
@@ -51,7 +44,7 @@ std::vector<uint8_t> AX25::encode(
 	for (std::size_t j = 0; j < 6; ++j) {
 		const unsigned char c = j < srcCall.size() ? static_cast<unsigned char>(srcCall[j]) : static_cast<unsigned char>(' ');
 
-		frame[i++] = static_cast<uint8_t>(std::toupper(c)) << 1;
+		frame[i++] = static_cast<uint8_t>(std::toupper(static_cast<unsigned char>(c))) << 1;
 	}
 
 	// Source SSID. CRRSSSSL: C = 0, RR = 11, SS = SSID, L = 1
@@ -64,7 +57,7 @@ std::vector<uint8_t> AX25::encode(
 	frame[i++] = 0xF0;
 
 	// Payload
-	std::copy(payload.begin(), payload.end(), frame.begin() + static_cast<std::vector<uint8_t>::difference_type>(i));
+	std::ranges::copy(payload, frame.begin() + static_cast<std::vector<uint8_t>::difference_type>(i));
 
 	return frame;
 }

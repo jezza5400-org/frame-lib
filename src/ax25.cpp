@@ -1,25 +1,34 @@
 #include "frame_lib/ax25.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cctype>
+#include <cstddef>
 #include <stdexcept>
+#include <string_view>
 
-std::string AX25::normaliseCallsign(std::string callsign) {
+std::array<char, 6> AX25::normaliseCallsign(std::string_view callsign) {
 	if (callsign.size() > 6) throw std::invalid_argument("AX.25 CALLSIGN must be <= 6 characters");
 
-	callsign.resize(6, ' ');
+	std::array<char, 6> result;
 
-	std::ranges::for_each(callsign, [](char& c) { c = static_cast<char>(std::toupper(static_cast<unsigned char>(c))); });
+	for (std::size_t i = 0; i < 6; ++i) {
+		if (i < callsign.size()) {
+			result[i] = static_cast<char>(std::toupper(static_cast<unsigned char>(callsign[i])));
+		} else {
+			result[i] = ' ';
+		}
+	}
 
-	return callsign;
+	return result;
 }
 
 std::vector<uint8_t> AX25::encode(
-	const std::string& destCall,
-	const uint8_t destSSID,
-	const std::string& srcCall,
-	const uint8_t srcSSID,
-	const std::string& payload
+	std::string_view destCall,
+	uint8_t destSSID,
+	std::string_view srcCall,
+	uint8_t srcSSID,
+	std::string_view payload
 ) {
 	if (destSSID > 15 || srcSSID > 15) throw std::invalid_argument("AX.25 SSID must be 0-15");
 

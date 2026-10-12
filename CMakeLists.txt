@@ -29,7 +29,8 @@ include(Catch)
 enable_testing()
 
 add_executable(frame-lib_tests
-	tests/frame-lib_tests.cpp
+	tests/ax25_tests.cpp
+	tests/kiss_tests.cpp
 )
 
 target_link_libraries(frame-lib_tests

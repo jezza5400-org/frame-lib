@@ -20,6 +20,7 @@ BraceWrapping:
 
 PointerAlignment: Left
 ReferenceAlignment: Left
+DerivePointerAlignment: false
 
 SpaceBeforeParens: ControlStatements
 

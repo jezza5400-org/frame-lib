@@ -5,6 +5,9 @@
 #include <vector>
 
 std::vector<uint8_t> KISS::encode(const std::vector<uint8_t>& ax25Frame, uint8_t type) {
+	if ((type >> 4) > 0x0F) throw std::invalid_argument("KISS type port must be 0-15 (inclusive)");
+	if ((type & 0x0F) > 6 && (type & 0x0F) != 0xFF) throw std::invalid_argument("KISS type command must be 0-6 (inclusive) or 0xFF");
+
 	size_t expandedSize = 0;
 	for (uint8_t byte : ax25Frame) {
 		expandedSize += (byte == 0xDB || byte == 0xC0) ? 2 : 1;
@@ -29,14 +32,17 @@ std::vector<uint8_t> KISS::encode(const std::vector<uint8_t>& ax25Frame, uint8_t
 	return frame;
 }
 
-std::vector<uint8_t> KISS::decode(const std::vector<uint8_t>& kissFrame) {
+KissPacket KISS::decode(const std::vector<uint8_t>& kissFrame) {
 	if (kissFrame.size() < 3) throw std::invalid_argument("KISS frame must be >= 3 characters");
+	if (kissFrame.back() != 0xC0) throw std::invalid_argument("KISS frame missing trailing FEND");
 
 	size_t i = 0;
 	while (i < kissFrame.size() && kissFrame[i] == 0xC0) {
 		i++;
 	}
-	i++;
+	if (i >= kissFrame.size()) throw std::runtime_error("KISS frame missing command byte");
+
+	uint8_t command = kissFrame[i++];
 
 	size_t expandedSize = 0;
 	for (uint8_t byte : kissFrame) {
@@ -48,9 +54,7 @@ std::vector<uint8_t> KISS::decode(const std::vector<uint8_t>& kissFrame) {
 	ax25Frame.reserve(expandedSize);
 
 	for (; i < kissFrame.size() - 1; i++) {
-		if (kissFrame[i] == 0xC0) {
-			break;
-		}
+		if (kissFrame[i] == 0xC0) break;
 
 		if (kissFrame[i] == 0xDB && i + 1 < kissFrame.size()) {
 			if (kissFrame[i + 1] == 0xDD) ax25Frame.push_back(0xDB);
@@ -62,5 +66,5 @@ std::vector<uint8_t> KISS::decode(const std::vector<uint8_t>& kissFrame) {
 		}
 	}
 
-	return ax25Frame;
+	return {.type = command, .ax25Frame = ax25Frame};
 }

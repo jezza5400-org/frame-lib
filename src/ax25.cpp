@@ -4,6 +4,7 @@
 #include <array>
 #include <cctype>
 #include <cstddef>
+#include <cstdint>
 #include <stdexcept>
 #include <string_view>
 
@@ -79,4 +80,29 @@ std::vector<uint8_t> AX25::encode(const AX25Packet& packet) {
 		packet.srcSSID,
 		packet.payload
 	);
+}
+
+AX25Packet AX25::decode(const std::vector<uint8_t>& frame) {
+	if (frame.size() < 16) throw std::invalid_argument("AX.25 frame too short, must be >= 16 bytes");
+
+	std::string destCall;
+	for (size_t i = 0; i < 6; i++) {
+		destCall += static_cast<char>(frame[i] >> 1);
+	}
+
+	uint8_t destSSID = (frame[6] >> 1) & 0b111;
+
+	std::string srcCall;
+	for (size_t i = 7; i < 13; i++) {
+		srcCall += static_cast<char>(frame[i] >> 1);
+	}
+
+	uint8_t srcSSID = (frame[13] >> 1) & 0b111;
+
+	std::string payload;
+	for (size_t i = 16; i < frame.size(); i++) {
+		payload += static_cast<char>(frame[i]);
+	}
+
+	return AX25Packet{.destCall = destCall, .destSSID = destSSID, .srcCall = srcCall, .srcSSID = srcSSID, .payload = payload};
 }

@@ -3,7 +3,14 @@ Checks: >
   performance-*,
   readability-*,
   modernize-*,
-  -modernize-use-trailing-return-type
+  misc-*,
+  portability-*,
+  concurrency-*,
+  clang-analyzer-*,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -modernize-use-trailing-return-type,
+  -readability-braces-around-statements
 
 WarningsAsErrors: ''
 

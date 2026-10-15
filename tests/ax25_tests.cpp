@@ -1,6 +1,8 @@
 #include "frame_lib/ax25.hpp"
 #include <catch2/benchmark/catch_benchmark.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cstdint>
+#include <sys/types.h>
 #include <vector>
 
 TEST_CASE("AX.25 Frame Encoded") {
@@ -48,6 +50,18 @@ TEST_CASE("AX.25 Invalid SSID") {
 		AX25::encode("VK3XYZ", 0, "VK3ABC", 16, "test"),
 		std::invalid_argument
 	);
+}
+
+TEST_CASE("AX.25 Decode"){
+	AX25Packet packet = {.destCall = "VK3XYZ", .destSSID = 0, .srcCall = "VK3ABC", .srcSSID = 0, .payload = "test"};
+	std::vector<uint8_t> input = AX25::encode(packet);
+	AX25Packet output = AX25::decode(input);
+
+	REQUIRE(output.destCall == packet.destCall);
+	REQUIRE(output.destSSID == packet.destSSID);
+	REQUIRE(output.srcCall == packet.srcCall);
+	REQUIRE(output.srcSSID == packet.srcSSID);
+	REQUIRE(output.payload == packet.payload);
 }
 
 TEST_CASE("AX.25 Callsign Too Long") {

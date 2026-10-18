@@ -54,7 +54,7 @@ TEST_CASE("KISS Encoder - Functionality", "[kiss][encode]") {
 	}
 }
 
-TEST_CASE("KISS Encoder - Benchmarks", "[kiss][benchmark]") {
+TEST_CASE("KISS Encoder - Benchmarks", "[kiss][!benchmark]") {
 	std::vector<uint8_t> typical_frame;
 	typical_frame.reserve(256);
 
@@ -76,8 +76,9 @@ TEST_CASE("KISS Decoder - Functionality", "[kiss][decode]") {
 
 		KissPacket pkt = KISS::decode(input);
 
-		REQUIRE(pkt.type == 0x00);
-		REQUIRE(pkt.ax25Frame.empty());
+		REQUIRE(pkt.port == 0x00);
+		REQUIRE(pkt.command == 0x00);
+		REQUIRE(pkt.payload.empty());
 	}
 
 	SECTION("Missing command byte frame") {
@@ -91,26 +92,29 @@ TEST_CASE("KISS Decoder - Functionality", "[kiss][decode]") {
 
 		KissPacket pkt = KISS::decode(input);
 
-		REQUIRE(pkt.type == 0x00);
-		REQUIRE(pkt.ax25Frame == std::vector<uint8_t>({0x01, 0x02, 0x03, 0x04}));
+		REQUIRE(pkt.port == 0x00);
+		REQUIRE(pkt.command == 0x00);
+		REQUIRE(pkt.payload == std::vector<uint8_t>({0x01, 0x02, 0x03, 0x04}));
 	}
 
 	SECTION("Payload containing escaped FEND (0xDB 0xDC)") {
-		std::vector<uint8_t> input = {0xC0, 0x00, 0x12, 0xDB, 0xDC, 0x34, 0xC0};
+		std::vector<uint8_t> input = {0xC0, 0xA0, 0x12, 0xDB, 0xDC, 0x34, 0xC0};
 
 		KissPacket pkt = KISS::decode(input);
 
-		REQUIRE(pkt.type == 0x00);
-		REQUIRE(pkt.ax25Frame == std::vector<uint8_t>({0x12, 0xC0, 0x34}));
+		REQUIRE(pkt.port == 0x0A);
+		REQUIRE(pkt.command == 0x00);
+		REQUIRE(pkt.payload == std::vector<uint8_t>({0x12, 0xC0, 0x34}));
 	}
 
 	SECTION("Payload containing escaped FESC (0xDB 0xDD)") {
-		std::vector<uint8_t> input = {0xC0, 0x00, 0x12, 0xDB, 0xDD, 0x34, 0xC0};
+		std::vector<uint8_t> input = {0xC0, 0x41, 0x12, 0xDB, 0xDD, 0x34, 0xC0};
 
 		KissPacket pkt = KISS::decode(input);
 
-		REQUIRE(pkt.type == 0x00);
-		REQUIRE(pkt.ax25Frame == std::vector<uint8_t>({0x12, 0xDB, 0x34}));
+		REQUIRE(pkt.port == 0x04);
+		REQUIRE(pkt.command == 0x01);
+		REQUIRE(pkt.payload == std::vector<uint8_t>({0x12, 0xDB, 0x34}));
 	}
 
 	SECTION("Payload with consecutive escape sequences") {
@@ -130,18 +134,20 @@ TEST_CASE("KISS Decoder - Functionality", "[kiss][decode]") {
 
 		KissPacket pkt = KISS::decode(input);
 
-		REQUIRE(pkt.type == 0x00);
-		REQUIRE(pkt.ax25Frame == std::vector<uint8_t>({0xC0, 0xDB, 0xC0, 0xDB}));
+		REQUIRE(pkt.port == 0x00);
+		REQUIRE(pkt.command == 0x00);
+		REQUIRE(pkt.payload == std::vector<uint8_t>({0xC0, 0xDB, 0xC0, 0xDB}));
 	}
 
 	SECTION("Round-trip consistency check") {
 		std::vector<uint8_t> original = {0x5A, 0xC0, 0x3B, 0xDB, 0xFF};
 
-		auto encoded = KISS::encode(original, 0x00);
+		auto encoded = KISS::encode(original, 0x05, 0x02);
 		KissPacket pkt = KISS::decode(encoded);
 
-		REQUIRE(pkt.type == 0x00);
-		REQUIRE(pkt.ax25Frame == original);
+		REQUIRE(pkt.port == 0x05);
+		REQUIRE(pkt.command == 0x02);
+		REQUIRE(pkt.payload == original);
 	}
 }
 
@@ -166,12 +172,13 @@ TEST_CASE("KISS Decoder - Error Handling", "[kiss][decode][errors]") {
 		// REQUIRE_THROWS(KISS::decode(input));
 
 		KissPacket pkt = KISS::decode(input);
-		REQUIRE(pkt.type == 0xF1);
-		REQUIRE(pkt.ax25Frame.empty());
+		REQUIRE(pkt.port == 0x0F);
+		REQUIRE(pkt.command == 0x01);
+		REQUIRE(pkt.payload.empty());
 	}
 }
 
-TEST_CASE("KISS Decoder - Benchmarks", "[kiss][benchmark]") {
+TEST_CASE("KISS Decoder - Benchmarks", "[kiss][!benchmark]") {
 
 	std::vector<uint8_t> typical_kiss_frame;
 	typical_kiss_frame.push_back(0xC0);

@@ -52,7 +52,7 @@ TEST_CASE("AX.25 Invalid SSID") {
 	);
 }
 
-TEST_CASE("AX.25 Decode"){
+TEST_CASE("AX.25 Decode") {
 	AX25Packet packet = {.destCall = "VK3XYZ", .destSSID = 0, .srcCall = "VK3ABC", .srcSSID = 0, .payload = "test"};
 	std::vector<uint8_t> input = AX25::encode(packet);
 	AX25Packet output = AX25::decode(input);

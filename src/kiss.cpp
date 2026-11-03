@@ -5,8 +5,8 @@
 #include <vector>
 
 std::vector<uint8_t> KISS::encode(const std::vector<uint8_t>& payload, uint8_t port, uint8_t command) {
-	if (port > 0x0F) throw std::invalid_argument("KISS type port must be 0-15 (inclusive)");
-	if (command > 6 && ((port << 4) | command) != 0xFF) throw std::invalid_argument("KISS type command must be 0-6 (inclusive) or 0xFF");
+	if (port > 0x0F) throw std::invalid_argument("KISS type port must be in range [0, 15]");
+	if (command > 6 && ((port << 4) | command) != 0xFF) throw std::invalid_argument("KISS type command must be in range [0, 6] or 0xFF");
 
 	size_t escapedPayloadSize = 0;
 	for (uint8_t byte : payload) {
@@ -37,7 +37,7 @@ std::vector<uint8_t> KISS::encode(const std::vector<uint8_t>& payload, uint8_t p
 }
 
 KissPacket KISS::decode(const std::vector<uint8_t>& kissFrame) {
-	if (kissFrame.size() < 3) throw std::invalid_argument("KISS frame must be >= 3 characters");
+	if (kissFrame.size() < 3) throw std::invalid_argument("KISS frame minimum length is 3 characters");
 	if (kissFrame.front() != 0xC0) throw std::runtime_error("KISS frame missing leading FEND");
 	if (kissFrame.back() != 0xC0) throw std::runtime_error("KISS frame missing trailing FEND");
 	if (kissFrame[1] == 0xC0 || kissFrame[1] == 0xDB) throw std::runtime_error("Invalid type byte");

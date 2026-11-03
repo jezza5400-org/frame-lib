@@ -9,8 +9,6 @@
 #include <string_view>
 
 std::array<uint8_t, 6> AX25::normaliseCallsign(std::string_view callsign) {
-	if (callsign.size() > 6) throw std::invalid_argument("AX.25 CALLSIGN must be <= 6 characters");
-
 	std::array<uint8_t, 6> result;
 
 	for (size_t i = 0; i < 6; ++i) {
@@ -31,9 +29,8 @@ std::vector<uint8_t> AX25::encode(
 	uint8_t srcSSID,
 	std::string_view payload
 ) {
-	if (destSSID > 15 || srcSSID > 15) throw std::invalid_argument("AX.25 SSID must be 0-15");
-
-	if (destCall.size() > 6 || srcCall.size() > 6) throw std::invalid_argument("AX.25 CALLSIGN must be <= 6 characters");
+	if (destSSID > 15 || srcSSID > 15) throw std::invalid_argument("AX.25 SSID must be in range [0, 15]");
+	if (destCall.size() > 6 || destCall.empty() || srcCall.size() > 6 || srcCall.empty()) throw std::invalid_argument("AX.25 CALLSIGN length must be in range [1, 6]");
 
 	// 7 bytes destination + 7 bytes source + 2 bytes control/PID.
 	std::vector<uint8_t> frame(16 + payload.size());
@@ -77,7 +74,7 @@ std::vector<uint8_t> AX25::encode(const AX25Packet& packet) {
 }
 
 AX25Packet AX25::decode(const std::vector<uint8_t>& frame) {
-	if (frame.size() < 16) throw std::invalid_argument("AX.25 frame too short, must be >= 16 bytes");
+	if (frame.size() < 16) throw std::invalid_argument("AX.25 frame too short. Minimum length is 16 bytes");
 
 	std::string destCall;
 	for (size_t i = 0; i < 6; i++) {

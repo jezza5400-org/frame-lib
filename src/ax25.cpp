@@ -8,16 +8,16 @@
 #include <stdexcept>
 #include <string_view>
 
-std::array<char, 6> AX25::normaliseCallsign(std::string_view callsign) {
+std::array<uint8_t, 6> AX25::normaliseCallsign(std::string_view callsign) {
 	if (callsign.size() > 6) throw std::invalid_argument("AX.25 CALLSIGN must be <= 6 characters");
 
-	std::array<char, 6> result;
+	std::array<uint8_t, 6> result;
 
-	for (std::size_t i = 0; i < 6; ++i) {
+	for (size_t i = 0; i < 6; ++i) {
 		if (i < callsign.size()) {
-			result[i] = static_cast<char>(std::toupper(static_cast<unsigned char>(callsign[i])));
+			result[i] = static_cast<uint8_t>(std::toupper(static_cast<uint8_t>(callsign[i])) << 1);
 		} else {
-			result[i] = ' ';
+			result[i] = static_cast<uint8_t>(' ' << 1);
 		}
 	}
 
@@ -38,24 +38,18 @@ std::vector<uint8_t> AX25::encode(
 	// 7 bytes destination + 7 bytes source + 2 bytes control/PID.
 	std::vector<uint8_t> frame(16 + payload.size());
 
-	std::size_t i = 0;
+	size_t i = 0;
 
 	// Destination callsign
-	for (std::size_t j = 0; j < 6; ++j) {
-		const unsigned char c = j < destCall.size() ? static_cast<unsigned char>(destCall[j]) : static_cast<unsigned char>(' ');
-
-		frame[i++] = static_cast<uint8_t>(std::toupper(static_cast<unsigned char>(c))) << 1;
-	}
+	std::ranges::copy(normaliseCallsign(destCall), frame.begin());
+	i += 6;
 
 	// Destination SSID. CRRSSSSL: C = 1, RR = 11, SS = SSID, L = 0
 	frame[i++] = 0b11100000 | (destSSID << 1);
 
 	// Source callsign
-	for (std::size_t j = 0; j < 6; ++j) {
-		const unsigned char c = j < srcCall.size() ? static_cast<unsigned char>(srcCall[j]) : static_cast<unsigned char>(' ');
-
-		frame[i++] = static_cast<uint8_t>(std::toupper(static_cast<unsigned char>(c))) << 1;
-	}
+	std::ranges::copy(normaliseCallsign(srcCall), frame.begin() + 7);
+	i += 6;
 
 	// Source SSID. CRRSSSSL: C = 0, RR = 11, SS = SSID, L = 1
 	frame[i++] = 0b01100001 | (srcSSID << 1);

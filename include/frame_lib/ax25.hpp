@@ -20,5 +20,5 @@ class AX25 {
 	static AX25Packet decode(const std::vector<uint8_t>& frame);
 
   private:
-	static std::array<char, 6> normaliseCallsign(std::string_view callsign);
+	static std::array<uint8_t, 6> normaliseCallsign(std::string_view callsign);
 };

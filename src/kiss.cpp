@@ -21,14 +21,18 @@ std::vector<uint8_t> KISS::encode(const std::vector<uint8_t>& payload, uint8_t p
 	frame[j++] = type;
 
 	for (uint8_t i : payload) {
-		if (i == 0xDB) {
+		switch (i) {
+		[[unlikely]] case 0xDB:
 			frame[j++] = 0xDB;
 			frame[j++] = 0xDD;
-		} else if (i == 0xC0) {
+			break;
+		[[unlikely]] case 0xC0:
 			frame[j++] = 0xDB;
 			frame[j++] = 0xDC;
-		} else {
+			break;
+		[[likely]] default:
 			frame[j++] = i;
+			break;
 		}
 	}
 
